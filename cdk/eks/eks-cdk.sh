@@ -65,17 +65,17 @@ if [[ "$ACTION" == "deploy" ]]; then
       echo "Synthetic canary and SLO was deployed successfully"
     else
       echo "Synthetic canary and SLO failed to deploy"
-      cdk destroy --context enableSlo=True --all --force --verbose
+#      cdk destroy --context enableSlo=True --all --force --verbose
       exit 1
     fi
   else
     echo "Deployment failed. Attempting to clean up resources by destroying all stacks..."
-    cdk destroy --all --force --verbose
+#    cdk destroy --all --force --verbose
     exit 1
   fi
 elif [[ "$ACTION" == "destroy" ]]; then
   echo "Starting CDK destroy for all stacks in the app"
-  cdk destroy  --context enableSlo=True --all --force --verbose
+#  cdk destroy  --context enableSlo=True --all --force --verbose
   echo "Destroy complete for all stacks in the app"
 else
   echo "Invalid action: $ACTION. Please use 'synth', 'deploy', or 'destroy'."

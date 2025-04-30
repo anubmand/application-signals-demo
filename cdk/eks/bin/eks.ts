@@ -8,6 +8,7 @@ import { SloStack } from '../lib/stacks/slo-stack';
 import { RdsStack } from '../lib/stacks/rds-stack';
 import { SyntheticCanaryStack } from '../lib/stacks/canary-stack';
 import { MyApplicationStack } from "../lib/stacks/my-application-stack";
+import {CloudWatchRumStack} from "../lib/stacks/rum-stack";
 
 const app = new App();
 
@@ -48,7 +49,12 @@ const syntheticCanaryStack = new SyntheticCanaryStack(app, 'AppSignalsSyntheticC
   syntheticCanaryRoleProp: iamStack.syntheticCanaryRoleProp,
 })
 
+const rumStack = new CloudWatchRumStack(app, 'AppSignalsRumStack', {
+  sampleAppNamespace: eksStack.SAMPLE_APP_NAMESPACE,
+})
+
 syntheticCanaryStack.addDependency(rdsStack);
+syntheticCanaryStack.addDependency(rumStack);
 
 // After AppSignal is enabled, it takes up to 10 minutes for the SLO metrics to become available. If this is deployed before the SLO metrics
 // are available, it will fail.
