@@ -26,6 +26,10 @@ rdsStack.addDependency(networkStack);
 
 const myApplicationStack = new MyApplicationStack(app, 'MyApplicationStack')
 
+const rumStack = new CloudWatchRumStack(app, 'AppSignalsRumStack', {
+  sampleAppNamespace: 'pet-clinic', // Using the same namespace as in EksStack
+})
+
 const eksStack = new EksStack(app, 'AppSignalsEksClusterStack', {
   vpc: networkStack.vpc,
   eksClusterRoleProp: iamStack.eksClusterRoleProp,
@@ -35,22 +39,20 @@ const eksStack = new EksStack(app, 'AppSignalsEksClusterStack', {
   cloudwatchAddonRoleProp: iamStack.cloudwatchAddonRoleProp,
   rdsClusterEndpoint: rdsStack.clusterEndpoint,
   rdsSecurityGroupId: networkStack.rdsSecurityGroupId,
-  awsApplicationTag: myApplicationStack.application.attrApplicationTagValue
+  awsApplicationTag: myApplicationStack.application.attrApplicationTagValue,
+  rumIdentityPoolId: rumStack.identityPoolId
 });
 
 eksStack.addDependency(networkStack);
 eksStack.addDependency(iamStack);
 eksStack.addDependency(rdsStack);
 eksStack.addDependency(myApplicationStack);
+eksStack.addDependency(rumStack); // Add dependency on RUM stack to ensure identityPoolId is available
 
 const syntheticCanaryStack = new SyntheticCanaryStack(app, 'AppSignalsSyntheticCanaryStack', {
   vpc: networkStack.vpc,
   albEndpoint: eksStack.ingressExternalIp.value,
   syntheticCanaryRoleProp: iamStack.syntheticCanaryRoleProp,
-})
-
-const rumStack = new CloudWatchRumStack(app, 'AppSignalsRumStack', {
-  sampleAppNamespace: eksStack.SAMPLE_APP_NAMESPACE,
 })
 
 syntheticCanaryStack.addDependency(rdsStack);
@@ -67,4 +69,3 @@ if (enableSlo) {
 
   sloStack.addDependency(syntheticCanaryStack);
 }
-

@@ -18,7 +18,8 @@ interface EksStackProps extends StackProps {
   cloudwatchAddonRoleProp: RoleProps,
   rdsClusterEndpoint: string,
   rdsSecurityGroupId: string,
-  awsApplicationTag: string
+  awsApplicationTag: string,
+  rumIdentityPoolId?: string
 }
 
 export class EksStack extends Stack {
@@ -44,6 +45,7 @@ export class EksStack extends Stack {
   private readonly ebsCsiDriverAddonRole: Role;
   private readonly sampleAppRole: Role;
   private readonly cloudwatchAddonRole: Role;
+  private readonly rumIdentityPoolId?: string;
 
   // Constructs generated in this stack
   private readonly cluster: Cluster;
@@ -63,9 +65,10 @@ export class EksStack extends Stack {
   constructor(scope: Construct, id: string, props: EksStackProps) {
     super(scope, id, props);
 
-    const { vpc, eksClusterRoleProp, eksNodeGroupRoleProp, ebsCsiAddonRoleProp, sampleAppRoleProp, cloudwatchAddonRoleProp, rdsClusterEndpoint, rdsSecurityGroupId, awsApplicationTag } = props;
+    const { vpc, eksClusterRoleProp, eksNodeGroupRoleProp, ebsCsiAddonRoleProp, sampleAppRoleProp, cloudwatchAddonRoleProp, rdsClusterEndpoint, rdsSecurityGroupId, awsApplicationTag, rumIdentityPoolId } = props;
     this.vpc = vpc;
     this.rdsClusterEndpoint = rdsClusterEndpoint;
+    this.rumIdentityPoolId = rumIdentityPoolId;
     this.rdsSecurityGroup = SecurityGroup.fromSecurityGroupId(
       this,
       'ImportedRdsSecurityGroup',
@@ -204,7 +207,7 @@ export class EksStack extends Stack {
     manifestFiles.forEach((file) => {
       const filePath = path.join(manifestPath, file);
       const yamlFile = readYamlFile(filePath);
-      const transformedYamlFile = transformYaml(yamlFile, this.account, this.region, this.SAMPLE_APP_NAMESPACE, this.ingressExternalIp?.value, this.rdsClusterEndpoint);
+      const transformedYamlFile = transformYaml(yamlFile, this.account, this.region, this.SAMPLE_APP_NAMESPACE, this.ingressExternalIp?.value, this.rdsClusterEndpoint, this.rumIdentityPoolId);
       const manifest = this.cluster.addManifest(transformNameToId(file), ...transformedYamlFile);
 
       dependencies.forEach((dependnecy) => {
