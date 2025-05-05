@@ -40,14 +40,15 @@ const eksStack = new EksStack(app, 'AppSignalsEksClusterStack', {
   rdsClusterEndpoint: rdsStack.clusterEndpoint,
   rdsSecurityGroupId: networkStack.rdsSecurityGroupId,
   awsApplicationTag: myApplicationStack.application.attrApplicationTagValue,
-  rumIdentityPoolId: rumStack.identityPoolId
+  rumIdentityPoolId: rumStack.identityPoolId,
+  rumAppMonitorId: rumStack.appMonitorId
 });
 
 eksStack.addDependency(networkStack);
 eksStack.addDependency(iamStack);
 eksStack.addDependency(rdsStack);
 eksStack.addDependency(myApplicationStack);
-eksStack.addDependency(rumStack); // Add dependency on RUM stack to ensure identityPoolId is available
+eksStack.addDependency(rumStack);
 
 const syntheticCanaryStack = new SyntheticCanaryStack(app, 'AppSignalsSyntheticCanaryStack', {
   vpc: networkStack.vpc,
